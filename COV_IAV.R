@@ -1,14 +1,4 @@
-#=================================================================
-#
-#
-#Authour: Inga Rodahl
-#Start date: 2022-01-27
-#
-#
-#About: Seurat analysis of Cov IAV dataset (2020)
-#Clean script
-#
-#=================================================================== 
+
 library('Seurat')
 library('Matrix')
 library('dplyr')
@@ -17,7 +7,7 @@ library('reshape2')
 library('data.table')
 library('tidyverse')
 
-setwd('~/Documents/KI/2020-2021/scRNAseq/CovIAV')
+setwd('~/Documents/CovIAV')
 
 dat <- readRDS('Final_nCoV_0716_upload.RDS')
 
@@ -32,12 +22,9 @@ dat@meta.data$group[grep(dat@meta.data$batch, pattern = 'COV')] <- 'COVID-19'
 dat@meta.data$group[grep(dat@meta.data$batch, pattern = 'Flu')] <- 'Influenza'
 dat@meta.data$group[grep(dat@meta.data$batch, pattern = 'COV-5')] <- 'COVID-19-severe'
 
-
 table(dat@meta.data$batch, dat@meta.data$group)
 Idents(dat) <- 'group'
 dat <- subset(dat, idents = c('Healthy', 'Influenza', 'COVID-19'))
-
-table(dat@meta.data$cell_type)
 
 #===============================================================================
 
@@ -60,33 +47,23 @@ dat_NK <- RunUMAP(dat_NK, dims = 1:20, verbose = FALSE) %>%
 str(dat_NK@meta.data)
 
 DimPlot(dat_NK, pt.size = 1, group.by = 'SCT_snn_res.0.8')
-ggsave('Jan_22/NK_UMAP_SCT08_CovIAV.pdf')
-
 
 DimPlot(dat_NK, pt.size = 1, group.by = 'group')
-ggsave('Jan_22/NK_UMAP_group_CovIAV.pdf')
 
 
-#RNA assay normalisation
+#RNA assay 
 DefaultAssay(dat_NK) <- 'RNA'
 dat_NK <- NormalizeData(dat_NK)
 all.genes <- rownames(dat_NK)
 dat_NK <- ScaleData(dat_NK, features = all.genes, vars.to.regress = 'percent.mt')
 
 FeaturePlot(dat_NK, features = 'FCGR3A', pt.size = 1) 
-ggsave('Jan_22/NK_UMAP_FCGR3A_CovIAV.pdf')
-
-#Cluster 7, 4 and 6 may be FCGR3A negative clusters, how many healthy cells in here?
 
 NK_markers <- FindAllMarkers(dat_NK, min.pct = 0.25, logfc.threshold = 0.25)
 NK_markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_log2FC) -> top10
 
 DoHeatmap(dat_NK, features = top10$gene, group.by = 'SCT_snn_res.0.8') + theme(text = element_text(size = 8)) 
-ggsave('Jan_22/NK_Heatmap_topDEG_CovIAV.png')
 
-#Save
-saveRDS(dat_NK, 'Jan_22/NK_SCT_scaled_CovIAV.RDS')
-dat_NK <- readRDS('Jan_22/NK_SCT_scaled_CovIAV.RDS')
 
 #CD16 negative
 CD16neg <- subset(dat_NK, idents = c('7', '4', '6'))
@@ -110,7 +87,7 @@ DotPlot(CD16neg, features = chem, cols = 'RdYlBu', dot.scale = 35)+
 	theme(axis.text.y = element_text(size = 20))+
 	theme(legend.text = element_text(size = 20))+
 	theme(legend.key.size = unit(1, 'cm'))
-ggsave('Jan_22/CD16neg_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
+ggsave('CD16neg_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
 
 
 
@@ -125,14 +102,12 @@ head(CD16neg_chem)
 
 #Add group 
 CD16neg_chem <- data.frame(t(CD16neg_chem))
-CD16neg_chem
 CD16neg_chem$group <- 'unknown'
 CD16neg_chem[grep('Ctrl', rownames(CD16neg_chem)), ]$group <- 'Healthy'
 CD16neg_chem[grep('Flu', rownames(CD16neg_chem)), ]$group <- 'Influenza'
 CD16neg_chem[grep('COV', rownames(CD16neg_chem)), ]$group <- 'COVID-19'
 
-write.csv(CD16neg_chem, 'Jan_22/CD16neg_avg_chem_CovIAV.csv')
-
+write.csv(CD16neg_chem, 'CD16neg_avg_chem_CovIAV.csv')
 
 
 #CD16positive 
@@ -156,7 +131,7 @@ DotPlot(CD16pos, features = chem, cols = 'RdYlBu', dot.scale = 35)+
 	theme(axis.text.y = element_text(size = 20))+
 	theme(legend.text = element_text(size = 20))+
 	theme(legend.key.size = unit(1, 'cm'))
-ggsave('Jan_22/CD16pos_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
+ggsave('CD16pos_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
 
 #Save average expression per donor 
 Idents(CD16pos) <- 'batch'
@@ -169,13 +144,12 @@ head(CD16pos_chem)
 
 #Add group 
 CD16pos_chem <- data.frame(t(CD16pos_chem))
-CD16pos_chem
 CD16pos_chem$group <- 'unknown'
 CD16pos_chem[grep('Ctrl', rownames(CD16pos_chem)), ]$group <- 'Healthy'
 CD16pos_chem[grep('Flu', rownames(CD16pos_chem)), ]$group <- 'Influenza'
 CD16pos_chem[grep('COV', rownames(CD16pos_chem)), ]$group <- 'COVID-19'
 
-write.csv(CD16pos_chem, 'Jan_22/CD16pos_avg_chem_CovIAV.csv')
+write.csv(CD16pos_chem, 'CD16pos_avg_chem_CovIAV.csv')
 
 #===============================================================================
 
@@ -203,13 +177,10 @@ dat_T <- RunUMAP(dat_T, dims = 1:20, verbose = FALSE) %>%
 	FindClusters(verbose = FALSE)
 
 DimPlot(dat_T, pt.size = 0.8)
-ggsave('Jan_22/Tcell_UMAP_res08_CovIAV.pdf')
 
 DimPlot(dat_T, pt.size = 0.8, group.by = 'cell_type')
-ggsave('Jan_22/Tcell_UMAP_origCellID_CovIAV.pdf')
 
 DimPlot(dat_T, pt.size = 0.8, group.by = 'group')
-ggsave('Jan_22/Tcell_UMAP_status_CovIAV.pdf')
 
 
 #Normalise and scale RNA assay for visualisation and DEGs
@@ -218,15 +189,7 @@ dat_T <- NormalizeData(dat_T)
 all.genes <- rownames(dat_T)
 dat_T <- ScaleData(dat_T, features = all.genes, vars.to.regress = 'percent.mt')
 
-
-
 FeaturePlot(dat_T, features = c('CD8A', 'LYZ','CD4', 'NKG7', 'IL7R', 'CCR7', 'KLRB1'))
-ggsave('Jan_22/Tcell_Features_CovIAV.pdf')
-
-
-saveRDS(dat_T, 'Jan_22/Tsubset_SCT_scaled_CovIAV.RDS')
-
-dat_T <- readRDS('Jan_22/Tsubset_SCT_scaled_CovIAV.RDS')
 
 
 #CD8 T cells
@@ -247,7 +210,7 @@ DotPlot(CD8T, features = chem, cols = 'RdYlBu', dot.scale = 35)+
 	theme(axis.text.y = element_text(size = 20))+
 	theme(legend.text = element_text(size = 20))+
 	theme(legend.key.size = unit(1, 'cm'))
-ggsave('Jan_22/CD8T_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
+ggsave('CD8T_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
 
 #Save average expression per donor 
 Idents(CD8T) <- 'batch'
@@ -256,17 +219,13 @@ table(CD8T@meta.data$batch)
 CD8T_avg <- AverageExpression(CD8T)
 
 CD8T_chem <- CD8T_avg$RNA[chem, ]
-head(CD8T_chem)
 
 #Add group 
 CD8T_chem <- data.frame(t(CD8T_chem))
-CD8T_chem
 CD8T_chem$group <- 'unknown'
 CD8T_chem[grep('Ctrl', rownames(CD8T_chem)), ]$group <- 'Healthy'
 CD8T_chem[grep('Flu', rownames(CD8T_chem)), ]$group <- 'Influenza'
 CD8T_chem[grep('COV', rownames(CD8T_chem)), ]$group <- 'COVID-19'
-
-CD8T_chem
 
 write.csv(CD8T_chem, 'Jan_22/CD8T_avg_chem_CovIAV.csv')
 
@@ -276,7 +235,6 @@ write.csv(CD8T_chem, 'Jan_22/CD8T_avg_chem_CovIAV.csv')
 
 CD4T <- subset(dat_T, idents = c('Naive T cells', 'Activated CD4 T cells'))
 
-#Normalise and scale CD4 subset prior to visualisation 
 DefaultAssay(CD4T) <- 'RNA'
 CD4T <- NormalizeData(CD4T)
 all.genes <- rownames(CD4T)
@@ -290,7 +248,7 @@ DotPlot(CD4T, features = chem, cols = 'RdYlBu', dot.scale = 35)+
 	theme(axis.text.y = element_text(size = 20))+
 	theme(legend.text = element_text(size = 20))+
 	theme(legend.key.size = unit(1, 'cm'))
-ggsave('Jan_22/CD4T_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
+ggsave('CD4T_DotPlot_chem_CovIAV.pdf', w = 12, h = 8)
 
 #Save average expression per donor 
 Idents(CD4T) <- 'batch'
@@ -298,17 +256,13 @@ Idents(CD4T) <- 'batch'
 CD4T_avg <- AverageExpression(CD4T)
 
 CD4T_chem <- CD4T_avg$RNA[chem, ]
-head(CD4T_chem)
 
 #Add group 
 CD4T_chem <- data.frame(t(CD4T_chem))
-CD4T_chem
 CD4T_chem$group <- 'unknown'
 CD4T_chem[grep('Ctrl', rownames(CD4T_chem)), ]$group <- 'Healthy'
 CD4T_chem[grep('Flu', rownames(CD4T_chem)), ]$group <- 'Influenza'
 CD4T_chem[grep('COV', rownames(CD4T_chem)), ]$group <- 'COVID-19'
-CD4T_chem
-
 
 write.csv(CD4T_chem, 'Jan_22/CD4T_avg_chem_CovIAV.csv')
 
