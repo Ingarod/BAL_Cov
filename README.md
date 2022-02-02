@@ -1,5 +1,5 @@
-# CovFlu_
-Scripts for analysis of publicly available datasets
+BALF covid single cell RNA seq data analysis
 
-Single cell RNA-seq data from peripheral blood of COVID-19 and Influenza patients from Zhu et.al. RDS file from: http://cells.ucsc.edu/covid19-balf/nCoV.rds.
+Script for analysis of single cell RNA seq data from BALF of covid patients and helathy controls.  (Liao M. et al, Single-cell landscape of bronchoalveolar immune cells in patients with COVID-19, Nature Medicine, 2020. https://www.nature.com/articles/s41591-020-0901-9)
 
+Source for RDS file: http://cells.ucsc.edu/covid19-balf/nCoV.rds 
