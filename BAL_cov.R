@@ -90,7 +90,6 @@ ggsave('NKT_UMAP_0.8_BalCov.pdf', h = 7, w = 7)
 #===================================================================================================
 
 Idents(dat_NKT) <- 'celltype2'
-dat_NK <- dat_NK2
 dat_NK <- subset(dat_NKT, idents = 'NK')
 
 dat_NK <- SCTransform(dat_NK, vars.to.regress = 'percent.mito', verbose = FALSE)
