@@ -135,7 +135,6 @@ VlnPlot(dat_NK, features = ef, cols = c("#999999", '#F49419', '#E85304'))
 ggsave('NK_ef_Vln_BalCov.pdf', w = 16, h = 8)
 
 
-#Additional chemokine receptors
 chem_2 <- c('CCR1', 'CCR2','CCR3', 'CCR4', 'CCR5','CCR6', 'CCR7', 'CCR8', 'CCR9', 'CCR10', 'CXCR1', 'CXCR2', 'CXCR3', 'CXCR4', 'CXCR5', 'CXCR6', 'GPR35', 'XCR1', 'CX3CR1', 'ACKR2', 'ACKR3', 'ACKR4')
 levels(dat_NK) <- c('S/C', 'O', 'HC') 
 DotPlot(dat_NK, features = chem_2, cols = 'RdYlBu',  dot.scale = 15) + 
@@ -179,7 +178,6 @@ levels(CD8T) <- c('HC', 'O', 'S/C')
 VlnPlot(CD8T, features = ef, cols = c("#999999", '#F49419', '#E85304'))
 ggsave('CD8T_ef_Vln_BalCov.pdf', w = 16, h = 8)
 
-#Additional chemokine receptors
 DotPlot(CD8T, features = chem_2, cols = 'RdYlBu',  dot.scale = 15) + 
 	theme(text = element_text(size = 30))+
 	theme(axis.text.x = element_text(size = 20, angle = 45, hjust = 1))+
